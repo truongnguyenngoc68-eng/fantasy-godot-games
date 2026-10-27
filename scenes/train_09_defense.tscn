@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c09traindefense"]
+
+[ext_resource type="Script" path="res://scripts/train_09_defense.gd" id="1_train09"]
+
+[node name="Train09Defense" type="Node3D"]
+script = ExtResource("1_train09")

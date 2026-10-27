@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cat_city_idle_main"]
+
+[ext_resource type="Script" path="res://scripts/cat_city_idle.gd" id="1_catcity"]
+
+[node name="CatCityIdle" type="Node2D"]
+script = ExtResource("1_catcity")

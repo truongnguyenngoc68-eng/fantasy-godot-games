@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danh Mục Hình Ảnh & Phân Tích Thiết Kế 10 Game Mã Nguồn Mở Tham Khảo</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --card-alt: #1c2128;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --red: #f85149;
+      --purple: #bc8cff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container { max-width: 1440px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    h1 { font-size: 1.85rem; margin-bottom: 8px; color: #fff; }
+    .subtitle { color: var(--muted); font-size: 0.98rem; margin-bottom: 16px; }
+    .rules-banner {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      padding-top: 12px; border-top: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
+      background: #21262d; border: 1px solid var(--border); color: var(--text);
+    }
+    .badge.priority { background: rgba(188, 140, 255, 0.15); border-color: var(--purple); color: var(--purple); }
+    .badge.playable { background: rgba(63, 185, 80, 0.15); border-color: var(--green); color: var(--green); }
+    .badge.source { background: rgba(88, 166, 255, 0.15); border-color: var(--accent); color: var(--accent); }
+    .badge.cc0 { background: rgba(63, 185, 80, 0.2); border-color: var(--green); color: #7ee787; }
+    .badge.warn { background: rgba(210, 153, 34, 0.15); border-color: var(--yellow); color: var(--yellow); }
+
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;
+      position: sticky; top: 10px; z-index: 50;
+      background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(8px);
+      padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+    }
+    .filter-btn {
+      background: var(--card); color: var(--text); border: 1px solid var(--border);
+      padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--accent); color: #0d1117; border-color: var(--accent);
+    }
+
+    .game-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .game-card.priority-card {
+      border-left: 4px solid var(--purple);
+    }
+    .game-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 16px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .game-title { font-size: 1.45rem; font-weight: 700; color: #fff; }
+    .game-meta { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+    .game-meta code {
+      background: #0d1117; padding: 2px 6px; border-radius: 4px; color: #79c0ff;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .gallery-item {
+      background: #090d13;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .gallery-item img {
+      width: 100%; height: 170px; object-fit: cover; cursor: zoom-in;
+      background: #05070a;
+      transition: transform 0.2s;
+    }
+    .gallery-item img.pixel-art {
+      object-fit: contain;
+      image-rendering: pixelated;
+      padding: 10px;
+    }
+    .gallery-item img:hover { transform: scale(1.03); }
+    .gallery-caption {
+      padding: 6px 10px; font-size: 0.76rem; color: var(--muted);
+      border-top: 1px solid var(--border); background: var(--card-alt);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .grid-2col {
+      display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px;
+    }
+    @media (max-width: 980px) { .grid-2col { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .panel h3 {
+      font-size: 1rem; margin-bottom: 10px; color: var(--accent);
+      border-bottom: 1px solid var(--border); padding-bottom: 6px;
+    }
+    .design-list { list-style: none; }
+    .design-list li { margin-bottom: 9px; font-size: 0.9rem; }
+    .design-list strong { color: #fff; }
+
+    table.license-table {
+      width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 6px;
+    }
+    table.license-table th, table.license-table td {
+      border: 1px solid var(--border); padding: 7px 9px; text-align: left; vertical-align: top;
+    }
+    table.license-table th { background: #12161c; color: var(--muted); width: 22%; }
+    .takeaway-box {
+      margin-top: 12px; padding: 10px 12px; border-radius: 6px;
+      background: rgba(88, 166, 255, 0.08); border-left: 3px solid var(--accent);
+      font-size: 0.87rem;
+    }
+
+    /* Lightbox */
+    #lightbox {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      z-index: 999; align-items: center; justify-content: center; flex-direction: column; padding: 24px;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 92vw; max-height: 82vh; border-radius: 8px; border: 1px solid var(--border); background: #090d13; }
+    #lightbox-caption { margin-top: 12px; color: var(--text); font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Danh Mục Hình Ảnh Thật & Phân Tích Thiết Kế 10 Game Mã Nguồn Mở (`D:\game\references`)</h1>
+    <p class="subtitle">
+      Tất cả hình ảnh và hoạt ảnh (`.gif`, `.png`, `.jpg`) dưới đây được trích xuất nguyên bản 100% từ kho tài nguyên thật của 10 dự án đã tải về <code>D:\game\references</code> (không dùng ảnh AI, không tự vẽ icon, không trộn lẫn asset). Click vào bất kỳ ảnh nào để phóng to.
+    </p>
+    <div class="rules-banner">
+      <span class="badge priority">Ưu tiên 1–4: OpenDuelyst · Ancient Beast · Veloren · 0 A.D.</span>
+      <span class="badge playable">9/10 Game Chạy Trực Tiếp Trên Windows (8 Bản Native EXE/JAR + 1 Bản Local Web Build)</span>
+      <span class="badge cc0">OpenDuelyst: CC0 1.0 (Lưu ý loại trừ 2 font thương mại Averta/TrumpGothicPro)</span>
+      <span class="badge warn">D:\game\eclipse-survivors: Giữ nguyên 100%, chưa chỉnh sửa</span>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterGames('all', this)">Tất cả 10 Game</button>
+    <button class="filter-btn" onclick="filterGames('priority', this)">Nhóm Ưu Tiên (1–4)</button>
+    <button class="filter-btn" onclick="filterGames('2d', this)">2D Sprite / Pixel / Vector</button>
+    <button class="filter-btn" onclick="filterGames('3d', this)">3D / Voxel / Cảnh Quan</button>
+    <button class="filter-btn" onclick="filterGames('cc0', this)">Tài nguyên CC0 / Public Domain</button>
+    <button class="filter-btn" onclick="filterGames('playable', this)">Bản Chơi Ngay (Windows EXE/JAR)</button>
+  </div>
+
+  <!-- 1. OPENDUELYST -->
+  <section class="game-card priority-card" data-tags="priority 2d cc0">
+    <div class="game-header">
+      <div>
+        <div class="game-title">1. OpenDuelyst — Sinh vật Fantasy 2D, Hoạt ảnh, Kỹ năng, Hiệu ứng & Giao diện</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\open-duelyst</code> · Nguồn: <code>https://github.com/open-duelyst/duelyst</code> · 12,807 files (1,392 unit files, 423 FX sheets, 69 unit GIFs, 671 SFX)
+        </div>
+      </div>
+      <div>
+        <span class="badge priority">Ưu tiên #1</span>
+        <span class="badge cc0">Code & Art: CC0 1.0 Universal</span>
+        <span class="badge source">Mã nguồn + Kho Asset Gốc (Cần Firebase/Docker nếu chạy server)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/01_openduelyst_boss_boreal.gif" alt="Boreal Juggernaut Breathing GIF" onclick="openLightbox(this)" />
+        <div class="gallery-caption">app/resources/unit_gifs/boss_borealjuggernaut_breathing.gif</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/01_openduelyst_boss_chaosknight.gif" alt="Chaos Knight Breathing GIF" onclick="openLightbox(this)" />
+        <div class="gallery-caption">app/resources/unit_gifs/boss_chaosknight_breathing.gif</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/01_openduelyst_boss_cindera.gif" alt="Cindera Breathing GIF" onclick="openLightbox(this)" />
+        <div class="gallery-caption">app/resources/unit_gifs/boss_cindera_breathing.gif</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/01_openduelyst_boss_andromeda.gif" alt="Andromeda Breathing GIF" onclick="openLightbox(this)" />
+        <div class="gallery-caption">app/resources/unit_gifs/boss_andromeda_breathing.gif</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/01_openduelyst_scene_ember_highlands.jpg" alt="Magaari Ember Highlands" onclick="openLightbox(this)" />
+        <div class="gallery-caption">scenes/magaari_ember_highlands_background.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/01_openduelyst_scene_obsidian_woods.jpg" alt="Obsidian Woods" onclick="openLightbox(this)" />
+        <div class="gallery-caption">scenes/obsidian_woods_background.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/01_openduelyst_scene_frostfire.jpg" alt="Frostfire" onclick="openLightbox(this)" />
+        <div class="gallery-caption">scenes/frostfire/background.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/01_openduelyst_fx_flamingstampede.png" alt="Flaming Stampede FX Sprite Sheet" onclick="openLightbox(this)" />
+        <div class="gallery-caption">fx/f5_fx_flamingstampede.png (Spritesheet hiệu ứng phép)</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (OpenDuelyst)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Mỗi lượt rút bài & nhận Mana (tăng từ 2 lên 9), di chuyển Tướng (General) và quân lính trên bàn cờ 9×5 ô, triệu hồi sinh vật/phép/trang bị (Artifact), dùng quyền thay 1 lá bài (Replace) mỗi lượt để tối ưu tay bài, và kết liễu Tướng địch (25 HP).</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Đấu trí vị trí đứng (tranh 3 quả cầu Mana giữa bàn, chặn đường chéo, chống đánh sau lưng <em>Backstab</em>), chọn giữa dồn sát thương vào Tướng địch hay dọn lính giữ thế trận, và chọn lá bài nào cần <em>Replace</em> ngay trong lượt.</li>
+          <li><strong>3. Cách các màn/trận khác nhau:</strong> 6 phe phái (Lyonar, Songhai, Vetruvian, Abyssian, Magmar, Vanar) có cơ chế hoàn toàn khác nhau (Hồi máu vùng <em>Zeal</em>, Dịch chuyển đâm lén, Trụ <em>Obelysk</em>, Hiến tế <em>Deathwatch</em>, Tiến hóa <em>Rebirth/Grow</em>, Tường băng <em>Infiltrate</em>) kết hợp 6 đấu trường có chiều sâu thị giác và chế độ <em>Boss Battles</em> có luật dị biệt.</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Mở khóa tướng phụ, ngọc linh hồn (Spirit) chế tạo thẻ bài hiếm, hiệu ứng <em>Prismatic</em> lấp lánh, chuỗi nhiệm vụ theo phe và cảm giác "nổ combo" mãn nhãn nhờ hoạt ảnh pixel-art đa khung hình kèm hiệu ứng <em>FX</em> đè nhiều lớp.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Cách tách rời <strong>Unit Sprite Sheet</strong> (idle/breathing/run/attack/hit/death trong <code>app/resources/units/</code>) và <strong>Layered Spell FX</strong> (<code>app/resources/fx/*.plist + *.png</code>) giúp đòn đánh và phép AOE có lực va chạm rất mạnh trên nền cảnh 2D có ánh sáng viền (<code>scenes/</code>).
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (OpenDuelyst)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>CC0 1.0 Universal</strong> (<code>LICENSE</code>, <code>COPYING</code>). Tác giả gốc: Counterplay Games Inc. & OpenDuelyst Contributors.</td></tr>
+          <tr><th>Ảnh / Sprite / VFX</th><td><strong>CC0 1.0 Universal</strong> — Toàn bộ 1,392 file <code>units/</code>, 423 file <code>fx/</code>, 90 file <code>boss_battles/</code>, 128 file <code>scenes/</code>, 307 file <code>ui/</code>. Được phép tái sử dụng thoải mái.</td></tr>
+          <tr><th>Âm thanh (SFX/Music)</th><td><strong>CC0 1.0 Universal</strong> — 671 file <code>sfx/</code> và 22 bản nhạc <code>music/</code> trong repo.</td></tr>
+          <tr><th>Font chữ (LƯU Ý)</th><td>
+            • <code>Lato-*.ttf</code> & <code>fontawesome-webfont.*</code>: <strong>SIL OFL 1.1</strong> (An toàn dùng lại).<br/>
+            • <strong style="color:var(--yellow)">Cảnh báo:</strong> <code>averta-*-webfont.ttf</code> & <code>TrumpGothicPro-*.ttf</code> là font thương mại bên thứ 3 (CC0 mục 4c không cấp quyền sở hữu trí tuệ của bên thứ 3). <strong>Không dùng lại 2 font này.</strong>
+          </td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. ANCIENT BEAST -->
+  <section class="game-card priority-card" data-tags="priority 2d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">2. Ancient Beast — Thiết kế thú, Vai trò chiến đấu & Phối hợp kỹ năng</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\ancient-beast</code> · Nguồn: <code>https://github.com/FreezingMoon/AncientBeast</code> · Đã build sẵn bản Web Offline (<code>dist/</code>)
+        </div>
+      </div>
+      <div>
+        <span class="badge priority">Ưu tiên #2</span>
+        <span class="badge playable">Chạy Offline Local Web (Vite Build sẵn)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/02_ancientbeast_art_chimera.jpg" alt="Chimera Artwork" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/units/artwork/Chimera.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/02_ancientbeast_art_golden_wyrm.jpg" alt="Golden Wyrm Artwork" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/units/artwork/Golden Wyrm.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/02_ancientbeast_art_cyber_wolf.jpg" alt="Cyber Wolf Artwork" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/units/artwork/Cyber Wolf.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/02_ancientbeast_cardboard_chimera.png" alt="Chimera Cardboard Cutout" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/units/cardboards/Chimera.png</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/02_ancientbeast_cardboard_cyber_wolf.png" alt="Cyber Wolf Cardboard Cutout" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/units/cardboards/Cyber Wolf.png</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/02_ancientbeast_loc_dark_forest.jpg" alt="Dark Forest Arena" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/locations/Dark Forest.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/02_ancientbeast_loc_dragon_bones.jpg" alt="Dragon Bones Arena" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/locations/Dragon Bones.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/02_ancientbeast_loc_shadow_cave.jpg" alt="Shadow Cave Arena" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/locations/Shadow Cave.jpg</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (Ancient Beast)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Dark Priest đứng ở tiền tuyến thu thập <em>Plasma</em> và <em>Energy</em> mỗi lượt để in 3D (triệu hồi) quái thú thuộc 7 tộc Đại Tội (Avarice, Envy, Gluttony, Lust, Pride, Sloth, Wrath) theo bậc Level 1 → 2 → 3 trên lưới lục giác, di chuyển và dùng bộ 4 kỹ năng riêng của từng thú để tiêu diệt Dark Priest đối phương.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Quản lý 2 nguồn tài nguyên song song (<em>Plasma</em> để mở khóa/triệu hồi thú bậc cao vs <em>Energy/Meditation</em> để tung chiêu), xếp vị trí thú kích thước 1–3 ô lục giác để che chắn cho Dark Priest, và tính toán 9 hệ sát thương/kháng (Pierce, Slash, Crush, Shock, Burn, Frost, Poison, Sonic, Mental).</li>
+          <li><strong>3. Cách các màn/trận khác nhau:</strong> 5 đấu trường (<em>Dark Forest, Desolated Canyon, Dragon Bones, Frozen Wall, Shadow Cave</em>) thay đổi bố cục vật cản/bẫy trên lưới lục giác; kết hợp tổ hợp đội hình thú tạo ra lối đánh hoàn toàn khác (đội hình cấu rỉa tầm xa, đội hình phản đòn/hút máu, đội hình đặt bẫy độc).</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Cơ chế <strong>Drop Trophy</strong> cực hay (trong <code>src/data/units.ts</code>): mỗi loài thú khi bị hạ gục đều rơi ra một bộ phận cơ thể đặc trưng trên ô đất; thú ăn được vật phẩm đó được cộng vĩnh viễn chỉ số tương ứng trong trận, kèm nâng cấp kỹ năng (Ability Upgrade) khi đủ Plasma.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Xem <code>src/data/units.ts</code> để học cách định nghĩa <strong>vai trò thú chiến đấu</strong>: mỗi sinh vật có kích thước (1–3), tốc độ hồi máu/năng lượng (Regrowth/Meditation), 9 loại kháng nguyên tố, 4 kỹ năng có <code>upgrade</code> rõ ràng, và một vật phẩm rơi (<code>drop</code>) tăng chỉ số cụ thể khi bị tiêu diệt.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (Ancient Beast)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>GNU AGPL v3.0</strong> (<code>AGPL.txt</code>, <code>LICENSE.md</code>). Yêu cầu ghi nguồn & giữ nguyên giấy phép AGPL nếu phát hành bản sửa đổi qua mạng.</td></tr>
+          <tr><th>Ảnh (Artwork & Sprites)</th><td><strong>CC BY-SA 4.0</strong> (<code>README.md</code>). Tác giả: Freezing Moon & cộng đồng nghệ sĩ (<em>Chimera, Golden Wyrm, Cyber Wolf...</em>). Tên & logo "Ancient Beast" là nhãn hiệu của Freezing Moon.</td></tr>
+          <tr><th>Âm thanh (Music & SFX)</th><td><strong>CC BY-SA 4.0</strong> (17 bản nhạc <code>assets/music/</code>, 51 tiếng gầm <code>assets/units/shouts/</code>, 15 SFX). Cần ghi credit dự án & tác giả.</td></tr>
+          <tr><th>Font chữ</th><td><strong>SIL Open Font License 1.1</strong> — Font <code>Play</code> (<code>assets/fonts/play-v9-latin-*.woff2</code>) của Jonas Hecksher.</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. VELOREN -->
+  <section class="game-card priority-card" data-tags="priority 3d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">3. Veloren — Thế giới Fantasy, Nhiều vùng địa hình, Dungeon & Thú đồng hành</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\veloren</code> · Nguồn chính thức: <code>https://gitlab.com/veloren/veloren</code> (Mirror: GitHub) · Bản chạy: <code>veloren-voxygen.exe</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge priority">Ưu tiên #3</span>
+        <span class="badge playable">Chạy Trực Tiếp Windows (veloren-voxygen.exe)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/03_veloren_bg1.jpg" alt="Veloren World Biome 1" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/voxygen/background/bg_1.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/03_veloren_bg5.jpg" alt="Veloren World Biome 5" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/voxygen/background/bg_5.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/03_veloren_bg12.jpg" alt="Veloren World Biome 12" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/voxygen/background/bg_12.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/03_veloren_bg20.jpg" alt="Veloren World Biome 20" onclick="openLightbox(this)" />
+        <div class="gallery-caption">assets/voxygen/background/bg_20.jpg</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (Veloren)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Khám phá thế giới mở phát sinh thủ tục (Procedural World) bằng tàu lượn (Glider) và thú cưỡi, săn quái hoang dã theo vùng sinh thái, thu thập nguyên liệu chế tạo giáp/vũ khíโม-đun, thuần hóa thú đồng hành (<em>Collar</em>) và chinh phục các tầng hầm ngục (Dungeon/Cultist/Adlet/Haniwa/Vampire Castle).</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Chọn vũ khí quyết định toàn bộ bảng kỹ năng (Kiếm, Rìu, Búa, Cung, Trượng lửa, Quyền trượng hồi máu), ghép tổ hợp thành phần vũ khí (gỗ/kim loại khác nhau đổi tốc độ đánh vs sát thương), quản lý thanh <em>Stamina/Energy</em> khi lăn né (Roll), đỡ đòn (Parry) và chọn mục tiêu Dungeon phù hợp cấp độ trang bị.</li>
+          <li><strong>3. Cách các màn/vùng khác nhau:</strong> Hệ thống sinh thế giới (<code>source/world/src/</code>) phân tách rõ rệt theo độ cao, nhiệt độ và độ ẩm: Rừng rậm, Thảo nguyên, Sa mạc xương rồng, Núi tuyết, Hang động pha lê, mỗi vùng có hệ sinh vật riêng (<code>assets/common/entity/wild/</code>) và kiến trúc Dungeon 5 bậc độ khó.</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Vũ khí/giáp huyền thoại rơi từ Boss tầng cuối Dungeon, công thức chế tạo hiếm, kỹ năng thuần hóa thú cưỡi/thú chiến đấu đi theo hỗ trợ, và thế giới mô phỏng thời gian thực (<em>rtsim</em>) nơi NPC, thương buôn và quái vật tự di cư.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Cách Veloren phân vùng sinh thái và gắn <strong>bảng quái vật đặc trưng theo từng Biome</strong> (<code>assets/common/entity/wild/*.ron</code>) + phân cấp Dungeon theo tầng để người chơi nhìn màu sắc môi trường và loài quái là biết ngay mức độ nguy hiểm.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (Veloren)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>GNU GPL v3.0</strong> (<code>source/LICENSE</code>). Nguồn chính thức tại GitLab <code>gitlab.com/veloren/veloren</code>.</td></tr>
+          <tr><th>Ảnh & Voxel Models</th><td><strong>GPL v3.0 / CC BY-SA 3.0 / CC BY-SA 4.0</strong> (ghi chi tiết từng file trong <code>assets/credits.ron</code>). Lưu ý một số model như <code>vroom.vox</code> dùng <strong>CC BY-NC-SA 4.0</strong>.</td></tr>
+          <tr><th>Âm thanh (Music/SFX)</th><td><strong style="color:var(--yellow)">Lưu ý quan trọng:</strong> Nhiều bản nhạc trong <code>assets/credits.ron</code> (ví dụ của <em>GeekyGami</em>) dùng giấy phép <strong>CC BY-NC-SA 4.0 kèm điều khoản chỉ dùng trong Veloren</strong>. Không lấy nhạc Veloren sang game khác.</td></tr>
+          <tr><th>Font chữ</th><td><strong>SIL OFL 1.1 / CC BY 4.0 / GPL+Exception</strong> (<code>assets/voxygen/font/*-license.txt</code>: <em>Metamorphous, OpenSans, NotoSans, EnterCommand, Alkhemikal</em>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 0 A.D. -->
+  <section class="game-card priority-card" data-tags="priority 3d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">4. 0 A.D. — Môi trường, Kiến trúc, Cây cối, Động vật & Bản đồ</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\0ad</code> · Nguồn: <code>https://github.com/0ad/0ad</code> · Bản chạy Windows: <code>D:\game\references\0ad\build\binaries\system\pyrogenesis.exe</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge priority">Ưu tiên #4</span>
+        <span class="badge playable">Chạy Trực Tiếp Windows (pyrogenesis.exe + Map Editor Atlas)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/04_0ad_bg_1.png" alt="0 A.D. Background 1" onclick="openLightbox(this)" />
+        <div class="gallery-caption">art/textures/ui/pregame/backgrounds (Trích từ public.zip)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/04_0ad_bg_2.png" alt="0 A.D. Background 2" onclick="openLightbox(this)" />
+        <div class="gallery-caption">art/textures/ui/pregame/backgrounds (Trích từ public.zip)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/04_0ad_map_1.png" alt="0 A.D. Map Preview 1" onclick="openLightbox(this)" />
+        <div class="gallery-caption">art/textures/ui/session/icons/mappreview (Map Preview)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/04_0ad_hellas_map.png" alt="0 A.D. Hellas Map" onclick="openLightbox(this)" />
+        <div class="gallery-caption">maps/random/hellas.png (Bản đồ địa hình Hellas)</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (0 A.D.)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Khai thác 4 loại tài nguyên (Thực phẩm, Gỗ, Đá, Kim loại) bằng công dân kiêm lính (Citizen-Soldiers), mở rộng lãnh thổ bằng công trình, thăng cấp qua 3 Thời kỳ (<em>Village Phase → Town Phase → City Phase</em>), huấn luyện đội hình quân sự và công thành đối phương.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Cân bằng giữa việc cho Citizen-Soldier đi khai thác kinh tế hay cầm vũ khí ra trận; chọn vị trí đặt công trình phòng thủ ở nút thắt địa hình; chọn nhánh công nghệ và Anh hùng (Hero) đặc trưng của từng nền văn minh cổ đại.</li>
+          <li><strong>3. Cách các màn/bản đồ khác nhau:</strong> Hàng chục quần xã địa lý lịch sử (Địa Trung Hải, Thảo nguyên Ba Tư, Rừng Bắc Âu, Ốc đảo Kush, Đồng bằng Ấn Độ) với thảm thực vật, mỏ khoáng sản, thú hoang (voi, hổ, hươu, cá voi) và địa hình sông/đồi chia cắt hoàn toàn chiến thuật di chuyển.</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Cảm giác nhìn một ngôi làng nhỏ phát triển thành Đô thị cổ đại đồ sộ với Kỳ quan (Wonder), mở khóa các đơn vị tinh nhuệ (Champion Units) và Voi chiến/Máy bắn đá ở City Phase.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Cách 0 A.D. tổ chức <strong>Biome Set</strong> (đất nền + cỏ + đá + cây cối + động vật hoang dã đồng bộ tông màu ấm/lạnh theo vùng khí hậu) và dùng công trình/tàn tích cổ đại làm điểm nhấn định hướng (Landmark) trên bản đồ rộng.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (0 A.D.)</h3>
+        <table class="license-table">
+          <tr><th>Code & Map Scripts</th><td><strong>GNU GPL v2.0+</strong> (Engine <code>pyrogenesis</code> & JS simulation) + <strong>LGPL v2.1 / MIT</strong> cho các thư viện phụ trợ (<code>license_gpl-2.0.txt</code>).</td></tr>
+          <tr><th>Ảnh, 3D Models & Textures</th><td><strong>CC BY-SA 3.0</strong> (<code>art/LICENSE.txt</code>). Bắt buộc ghi nguồn: <em>"Wildfire Games (http://www.wildfiregames.com/)"</em> kèm link CC BY-SA 3.0. Bản đồ vệ tinh NASA trong <code>maps/random/</code> thuộc Public Domain.</td></tr>
+          <tr><th>Âm thanh (Music & Audio)</th><td><strong>CC BY-SA 3.0</strong> (<code>audio/LICENSE.txt</code> — Omri Lahav & Wildfire Games Audio Team).</td></tr>
+          <tr><th>Font chữ</th><td><strong>SIL OFL 1.1 / Bitstream Vera / GPL+Exception</strong> (Font <em>Biolinum, Linux Libertine, DejaVu Sans</em>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. SUPERTUXKART -->
+  <section class="game-card" data-tags="3d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">5. SuperTuxKart — Bối cảnh hoạt hình 3D, Ánh sáng & Cách phối màu</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\supertuxkart</code> · Code: <code>stk-code</code> · Assets: <code>stk-assets</code> · Bản chạy: <code>build\SuperTuxKart-1.5-win\run_game.bat</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge playable">Chạy Trực Tiếp Windows (SuperTuxKart 1.5)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/05_stk_black_forest.jpg" alt="Black Forest Track" onclick="openLightbox(this)" />
+        <div class="gallery-caption">stk-assets/tracks/black_forest/sshot.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/05_stk_fortmagma.jpg" alt="Fort Magma Track" onclick="openLightbox(this)" />
+        <div class="gallery-caption">stk-assets/tracks/fortmagma/sshot.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/05_stk_abyss.jpg" alt="Abyss Track" onclick="openLightbox(this)" />
+        <div class="gallery-caption">stk-assets/tracks/abyss/screenshot.jpg</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/05_stk_snowtuxpeak.jpg" alt="Snow Tux Peak Track" onclick="openLightbox(this)" />
+        <div class="gallery-caption">stk-assets/tracks/snowtuxpeak/sshot-snowtuxpeak.jpg</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (SuperTuxKart)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Chọn nhân vật/xe theo hạng cân (Light, Medium, Heavy), đua qua các vòng đường đua 3D nhiều đường tắt, ôm cua <em>Drift (Skid)</em> tích lũy thanh tăng tốc, nhặt <em>Nitro</em> và hộp vật phẩm (Item Boxes) để tấn công hoặc phòng thủ.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Chọn thời điểm xả Nitro hay giữ lại để vượt dốc/đường tắt; chọn nhặt hộp quà (Item) hay bình Nitro trên mặt đường; dùng vật phẩm ngay để tấn công người dẫn đầu hay giữ làm lá chắn chống đòn khóa mục tiêu.</li>
+          <li><strong>3. Cách các màn khác nhau:</strong> 44 màn chơi (<code>stk-assets/tracks/</code>) mỗi màn có một bảng màu (Color Palette), bầu trời IBL (<code>sky-ibl.jpg</code>) và cơ chế môi trường riêng: rừng thu <em>Black Forest</em>, lâu đài dung nham <em>Fort Magma</em>, đáy biển <em>Abyss</em>, đền rừng nhiệt đới <em>Cocoa Temple</em>, dinh thự ma ám <em>Ravenbridge Mansion</em>.</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Chế độ <em>Story Mode (Overworld)</em> thu thập điểm vượt thử thách để mở khóa khu vực mới, mở khóa nhân vật/xe mới, cúp Grand Prix và thử thách thời gian (Time Trial).</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Cách dùng <strong>bảng màu tương phản nóng-lạnh (Warm/Cool Lighting)</strong> trong <code>tracks/*/scene.xml</code> và texture bão hòa cao để nhân vật/vật phẩm luôn nổi bật hoàn toàn khỏi nền đường đi, không bao giờ bị chìm màu.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (SuperTuxKart)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>GNU GPL v3.0+</strong> (<code>stk-code/COPYING</code>).</td></tr>
+          <tr><th>Ảnh, 3D Tracks & Karts</th><td><strong>CC BY-SA 3.0 / CC BY-SA 4.0 / CC BY 3.0 / GPL v3 / Public Domain</strong>. Mỗi thư mục trong <code>stk-assets/tracks/*/licenses.txt</code> và <code>karts/*/licenses.txt</code> ghi rõ tác giả (ví dụ: Jean-Manuel "samuncle" Clémençon — CC BY-SA 4.0).</td></tr>
+          <tr><th>Âm thanh (Music & SFX)</th><td><strong>CC BY-SA 3.0 / CC BY 3.0 / GPL</strong> (ghi chi tiết trong <code>stk-assets/music/*.music</code> và <code>sfx/sfx.xml</code>).</td></tr>
+          <tr><th>Font chữ</th><td><strong>SIL OFL 1.1</strong> (<em>SigmarOne, Cantarell, Noto Sans/Emoji</em>) & <strong>GPLv3+Font Exception / Apache 2.0</strong> (<em>wqy-microhei.ttf</em>) trong <code>stk-assets/ttf/LICENSE</code>.</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. MINDUSTRY -->
+  <section class="game-card" data-tags="2d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">6. Mindustry — Tiến trình mở khóa, Tài nguyên, Cây nghiên cứu, Bản đồ & Đợt địch</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\mindustry</code> · Nguồn: <code>https://github.com/Anuken/Mindustry</code> · Bản chạy: <code>Mindustry.jar</code> (kèm sẵn Portable OpenJDK 17 JRE)
+        </div>
+      </div>
+      <div>
+        <span class="badge playable">Chạy Trực Tiếp Windows (Mindustry v160.7 + JRE 17)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/06_mindustry_turret_foreshadow.png" alt="Foreshadow Turret" onclick="openLightbox(this)" />
+        <div class="gallery-caption">sprites/blocks/turrets/foreshadow.png</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/06_mindustry_turret_breach.png" alt="Breach Turret" onclick="openLightbox(this)" />
+        <div class="gallery-caption">sprites/blocks/turrets/breach.png</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/06_mindustry_turret_arc.png" alt="Arc Turret" onclick="openLightbox(this)" />
+        <div class="gallery-caption">sprites/blocks/turrets/arc.png</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/06_mindustry_unit_1.png" alt="Mindustry Unit Sprite" onclick="openLightbox(this)" />
+        <div class="gallery-caption">sprites/units/ (Cấu trúc sprite đơn vị lắp ghép)</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (Mindustry)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Đáp Core xuống một khu vực (Sector) trên hành tinh, đặt mũi khoan khai thác quặng thô, xây băng chuyền đưa vào lò luyện hợp kim/nhiên liệu, cấp đạn và điện cho tháp pháo hoặc xưởng lắp ráp quân đội để chống đỡ từng đợt địch (Waves) hoặc phá hủy căn cứ địch.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Phân bổ tài nguyên khai thác được giữa việc <em>đưa về Core để mở khóa Cây nghiên cứu (Tech Tree)</em> hay <em>đưa ra tiền tuyến làm đạn/nâng cấp phòng thủ</em>; chọn thời điểm phóng sang đánh chiếm Sector lân cận trong khi các Sector cũ vẫn có nguy cơ bị tấn công lại.</li>
+          <li><strong>3. Cách các màn khác nhau:</strong> 2 hành tinh (<em>Serpulo</em> và <em>Erekir</em> trong <code>Planets.java</code>) có hệ công nghệ, luật khí quyển và cách chơi trái ngược hoàn toàn (Serpulo thiên về thủ thành theo đợt sóng <code>captureWave</code>; Erekir thiên về RTS tấn công căn cứ trong sương mù). Các Sector có khoáng sản và địa hình hoàn toàn khác nhau (<code>SectorPresets.java</code>).</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Cây nghiên cứu (<code>TechTree.java</code>) cực kỳ gây nghiện: mỗi khoáng sản mới đào được (Titanium, Thorium, Surge Alloy) ngay lập tức mở ra cả một nhánh tháp pháo siêu cấp, lò phản ứng và quân đoàn robot khổng lồ.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Học cấu trúc <strong>TechTree gắn liền với Milestone thực tế</strong> (<code>TechTree.java</code>) và cách thiết kế <strong>Enemy Wave Escalation</strong> (xen kẽ đợt quái đông máu giấy, đợt quái bay vượt địa hình, và đợt Boss Guardian báo trước nhiều lượt).
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (Mindustry)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>GNU GPL v3.0</strong> (<code>source/LICENSE</code>). Tác giả: Anuke (Anuken).</td></tr>
+          <tr><th>Ảnh & Sprites</th><td><strong>CC BY-SA 4.0 / GPL v3.0</strong> (<code>core/assets-raw/sprites/</code> — Tác giả: Anuke).</td></tr>
+          <tr><th>Âm thanh (Music & SFX)</th><td><strong>CC BY-SA 4.0 / GPL v3.0</strong> (<code>core/assets/music/</code> & <code>sounds/</code> — Nhạc sáng tác bởi Anuke).</td></tr>
+          <tr><th>Font chữ</th><td><strong>SIL OFL 1.1 / GPL v3.0</strong> (<code>core/assets/fonts/</code>: <code>font.woff</code>, <code>tech.ttf</code>, <code>logic.ttf</code>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. VOXELIBRE -->
+  <section class="game-card" data-tags="3d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">7. VoxeLibre — Quần xã, Sinh vật, Vật phẩm, Chế tạo & Khám phá</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\voxelibre</code> · Nguồn chính thức: <code>https://git.minetest.land/VoxeLibre/VoxeLibre</code> · Chạy qua: <code>luanti-5.17.0-win64\bin\luanti.exe</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge playable">Chạy Trực Tiếp Windows (Luanti 5.17.0 + VoxeLibre tích hợp sẵn)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/07_voxelibre_bg1.png" alt="VoxeLibre Biome 1" onclick="openLightbox(this)" />
+        <div class="gallery-caption">source/menu/background.1.png (CC0)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/07_voxelibre_bg4.png" alt="VoxeLibre Biome 4" onclick="openLightbox(this)" />
+        <div class="gallery-caption">source/menu/background.4.png (CC0)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/07_voxelibre_bg8.png" alt="VoxeLibre Biome 8" onclick="openLightbox(this)" />
+        <div class="gallery-caption">source/menu/background.8.png (CC0)</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/07_voxelibre_icon.png" alt="VoxeLibre Icon" onclick="openLightbox(this)" />
+        <div class="gallery-caption">source/menu/icon.png</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (VoxeLibre)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Khai thác tài nguyên ban ngày, xây nơi trú ẩn, chế tạo công cụ/vũ khí theo bậc (Gỗ → Đá → Sắt → Kim cương → Netherite), trồng trọt/chăn nuôi giữ thanh thức ăn, đào sâu xuống lòng đất tìm quặng hiếm, phù phép (Enchanting) trang bị và mở cổng sang chiều không gian Nether / The End.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Quản lý độ bền công cụ, không gian túi đồ và thức ăn khi đi thám hiểm hang sâu; chọn dòng phù phép (Enchantment) và thuốc (Brewing) phù hợp trước khi vào di tích nguy hiểm.</li>
+          <li><strong>3. Cách các màn/quần xã khác nhau:</strong> Hệ thống quần xã đa tầng trong <code>mods/MAPGEN/mcl_biomes/init.lua</code> chia theo nhiệt độ (<code>heat_point</code>), độ ẩm (<code>humidity_point</code>) và độ cao (<code>y_min/y_max</code>), kèm bảng màu bầu trời/sương mù/nước riêng cho từng vùng (Overworld, Deep Ocean, Nether, End).</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Tìm thấy các cấu trúc ẩn (Ngôi làng, Đền sa mạc, Pháo đài Nether), mở rương kho báu, thu thập bùa <em>Armor Trims</em> trang trí giáp, và tự động hóa bằng mạch đá đỏ (<em>Redstone</em>).</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Cách <code>mcl_biomes/init.lua</code> dùng <strong>bảng màu khí quyển (Sky/Fog/Water/Foliage Palette)</strong> để biến đổi hoàn toàn cảm giác thị giác giữa các vùng đất chỉ bằng vài mã màu Hex đồng bộ.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (VoxeLibre)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>GNU GPL v3.0+</strong> (<code>LICENSE.txt</code>, <code>LEGAL.md</code>). Nguồn chính thức trên Mesehub: <code>git.minetest.land/VoxeLibre/VoxeLibre</code>.</td></tr>
+          <tr><th>Ảnh & Textures</th><td><strong>CC BY-SA 3.0 / CC BY-SA 4.0 / CC BY 4.0 / CC0</strong> (<code>LEGAL.md</code> — bộ gốc dựa trên <em>Pixel Perfection</em> của XSSheep; ảnh nền menu <code>menu/background.*.png</code> là <strong>CC0</strong>).</td></tr>
+          <tr><th>Âm thanh</th><td><strong>CC BY-SA 3.0 / CC BY 3.0 / CC0</strong> (ghi chi tiết trong <code>CREDITS.md</code> và từng thư mục mod).</td></tr>
+          <tr><th>Font chữ</th><td>Sử dụng hệ thống font của <strong>Luanti Engine</strong> (<em>Arimo, Cousine, DroidSansFallback</em> — <strong>Apache 2.0 / SIL OFL 1.1</strong>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. ENDLESS SKY -->
+  <section class="game-card" data-tags="2d playable cc0">
+    <div class="game-header">
+      <div>
+        <div class="game-title">8. Endless Sky — Nhiệm vụ, Phe phái, Trang bị, Khám phá & Đội hình hộ tống</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\endless-sky</code> · Nguồn: <code>https://github.com/endless-sky/endless-sky</code> · Bản chạy: <code>build\Endless Sky.exe</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge playable">Chạy Trực Tiếp Windows (Endless Sky v0.11.2)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/08_endlesssky_scene_asteroid.jpg" alt="Endless Sky Asteroid Scene" onclick="openLightbox(this)" />
+        <div class="gallery-caption">images/scene/asteroid scene.jpg (Public Domain)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/08_endlesssky_scene_citydark.jpg" alt="Endless Sky City Dark" onclick="openLightbox(this)" />
+        <div class="gallery-caption">images/scene/citydark.jpg (Public Domain)</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/08_endlesssky_ship_1.png" alt="Endless Sky Ship 1" onclick="openLightbox(this)" />
+        <div class="gallery-caption">images/ship/ (Tàu vũ trụ nhìn từ trên xuống)</div>
+      </div>
+      <div class="gallery-item">
+        <img class="pixel-art" src="catalog_assets/08_endlesssky_ship_3.png" alt="Endless Sky Ship 3" onclick="openLightbox(this)" />
+        <div class="gallery-caption">images/ship/ (Tàu vũ trụ nhìn từ trên xuống)</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (Endless Sky)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Khởi đầu với một con tàu nhỏ, nhận hợp đồng vận chuyển/hộ tống/săn hải tặc tại các hành tinh, kiếm tín dụng mua trang bị (<em>Outfits</em>) lắp vào không gian tàu, bắt giữ hoặc mua thêm tàu tạo thành Hạm đội hộ tống (<em>Escort Fleet</em>), và khám phá các nền văn minh ngoài hành tinh.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Bài toán <strong>Outfit Space vs Weapon/Engine Capacity vs Heat/Energy Dissipation</strong>: mỗi vũ khí, khiên, lò phản ứng và động cơ đều chiếm diện tích và tỏa nhiệt; đồng thời chọn đội hình tàu hộ tống (tàu khiên chắn, tàu phóng tên lửa tầm xa, tàu đánh chặn) và chọn phe phái đồng minh trong cốt truyện phân nhánh.</li>
+          <li><strong>3. Cách các vùng không gian khác nhau:</strong> 19 nền văn minh/vùng lãnh thổ (<code>source/data/</code>: <em>Human, Hai, Remnant, Wanderer, Korath, Coalition, Pug, Quarg, Drak...</em>), mỗi chủng tộc có công nghệ vũ khí, cơ chế di chuyển (Hyperdrive vs Jump Drive vs Wormhole) và hệ sinh thái chiến đấu riêng biệt.</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Khả năng vô hiệu hóa và <strong>chiếm đoạt (Capture) tàu hiếm của phe địch</strong> ngay trong trận đánh để bổ sung vào hạm đội của mình, cùng việc phát hiện các hệ sao bí mật chứa trang bị công nghệ người ngoài hành tinh vượt bậc.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Hệ thống <strong>Escort Fleet Formation & AI Commands</strong> (giữ đội hình quanh nhân vật chính, tập trung hỏa lực vào mục tiêu chỉ định, hoặc tản ra tự vệ) và cách thiết kế trang bị có <strong>đánh đổi (Trade-off: Sát thương cao = Tỏa nhiệt/Tốn năng lượng)</strong>.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (Endless Sky)</h3>
+        <table class="license-table">
+          <tr><th>Code & Data</th><td><strong>GNU GPL v3.0+</strong> (<code>source/license.txt</code>, <code>source/copyright</code> — Michael Zahniser & contributors).</td></tr>
+          <tr><th>Ảnh (Ships, Outfits, Landscapes)</th><td>
+            • <code>images/land/*</code> & <code>images/scene/*</code>: Phần lớn là <strong>Public Domain / CC0</strong>.<br/>
+            • <code>images/ship/*</code>, <code>images/outfit/*</code>, <code>images/effect/*</code>: <strong>CC BY-SA 4.0 / CC BY-SA 3.0 / CC BY 3.0</strong> (xem <code>source/copyright</code>).
+          </td></tr>
+          <tr><th>Âm thanh (Sounds)</th><td><strong>CC0 / CC BY 3.0 / CC BY-SA 3.0 / GPLv3</strong> (ghi chi tiết từng file trong <code>source/copyright</code>).</td></tr>
+          <tr><th>Font chữ</th><td><strong>Ubuntu Font License 1.0</strong> (<code>images/font/ubuntu14r.png</code>, <code>ubuntu18r.png</code>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. THRIVE -->
+  <section class="game-card" data-tags="3d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">9. Thrive — Tiến hóa sinh vật, Tùy biến cơ thể & Môi trường sống</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\thrive</code> · Nguồn: <code>https://github.com/Revolutionary-Games/Thrive</code> (Đã pull đủ 1,214 file Git LFS) · Bản chạy: <code>build\Thrive_1.7.0.0_windows_desktop\Thrive.exe</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge playable">Chạy Trực Tiếp Windows (Thrive v1.7.0 + Full Git LFS Assets)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/09_thrive_hydrothermal_vents.png" alt="Hydrothermal Vents Panorama" onclick="openLightbox(this)" />
+        <div class="gallery-caption">panoramas/HydrothermalVents.png</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/09_thrive_epipelagic.png" alt="Epipelagic Panorama" onclick="openLightbox(this)" />
+        <div class="gallery-caption">panoramas/Epipelagic.png</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/09_thrive_tidepool.png" alt="Tidepool Panorama" onclick="openLightbox(this)" />
+        <div class="gallery-caption">panoramas/Tidepool.png</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/09_thrive_estuary.png" alt="Estuary Background" onclick="openLightbox(this)" />
+        <div class="gallery-caption">background/Thrive_estuary0.png</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (Thrive)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Bơi trong môi trường vi sinh (Microbe Stage), hấp thụ các hợp chất hóa học (Glucose, Ammonia, Phosphate, Hydrogensulfide), săn hoặc tránh các loài sinh vật khác, tích đủ năng lượng phân đôi để vào <strong>Trình chỉnh sửa Tiến hóa (Organelle / Body Editor)</strong> sử dụng điểm Đột biến (MP) lắp ghép cơ thể, rồi di cư sang môi trường sống mới.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Với 100 điểm Đột biến (Mutation Points) mỗi thế hệ: chọn biến đổi màng tế bào (Cứng chống sát thương hay Mềm tăng tốc độ), thêm bào quan sản xuất ATP, tiêm độc tố (<em>Oxytoxy</em>), gai nhọn (<em>Pilus</em>) hay roi bơi (<em>Flagellum</em>); và chọn di cư sang vùng sinh thái (Patch) nào trên bản đồ.</li>
+          <li><strong>3. Cách các môi trường sống (Patches/Biomes) khác nhau:</strong> Định nghĩa trong <code>simulation_parameters/microbe_stage/biomes.json</code>: Miệng phun thủy nhiệt (<em>Hydrothermal Vents</em>) tối đen giàu Hydrogen Sulfide; Vùng nước mặt (<em>Epipelagic/Tidepool</em>) nhiều ánh sáng mặt trời cho quang hợp và giàu Oxy; Hang động ngầm và Biển băng có áp suất, nhiệt độ và quần thể sinh vật săn mồi (do hệ thống <em>Auto-Evo</em> tiến hóa ngầm) hoàn toàn khác nhau.</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> Nhìn sinh vật do chính tay mình lắp ghép lớn dần từ một tế bào đơn giản thành sinh vật đa bào (Multicellular → Macroscopic), thống trị bảng dân số <em>Auto-Evo</em> và mở khóa các bào quan/cơ quan sinh học bậc cao.</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Cách Thrive cấu trúc dữ liệu tiến hóa bằng JSON sạch sẽ (<code>simulation_parameters/microbe_stage/organelles.json</code> và <code>biomes.json</code>) nơi mỗi bộ phận lắp thêm vào cơ thể đều thay đổi <strong>hình dáng trực quan + chỉ số vật lý (khối lượng/tốc độ) + kỹ năng chiến đấu chủ động</strong>.
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (Thrive)</h3>
+        <table class="license-table">
+          <tr><th>Code</th><td><strong>GNU GPL v3.0+ kèm Mod Linking Exception</strong> (<code>source/LICENSE.txt</code> — Revolutionary Games Studio).</td></tr>
+          <tr><th>Ảnh, 3D Models & Textures</th><td><strong>CC BY-SA 3.0 Unported</strong> (<code>source/assets/LICENSE.txt</code>). Tất cả 1,214 file LFS đã được tải đầy đủ.</td></tr>
+          <tr><th>Âm thanh (Music & SFX)</th><td><strong>CC BY-SA 3.0 Unported</strong> (danh sách tác giả từng bản nhạc trong <code>simulation_parameters/common/music_tracks.json</code> và <code>credits.json</code>).</td></tr>
+          <tr><th>Font chữ</th><td><strong>SIL OFL 1.1</strong> (<em>Jura, Lato, NotoSans, RobotoMono, thrive.ttf</em> trong <code>source/assets/fonts/</code>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. XONOTIC -->
+  <section class="game-card" data-tags="3d playable">
+    <div class="game-header">
+      <div>
+        <div class="game-title">10. Xonotic — Phản hồi chiến đấu, Đạn, Hiệu ứng nổ, Âm thanh & Thiết kế đấu trường</div>
+        <div class="game-meta">
+          Thư mục: <code>D:\game\references\xonotic</code> · Nguồn: <code>https://gitlab.com/xonotic/xonotic</code> (+ 7 kho con từ <code>./all</code>) · Bản chạy: <code>build\Xonotic\xonotic.exe</code>
+        </div>
+      </div>
+      <div>
+        <span class="badge playable">Chạy Trực Tiếp Windows (Xonotic v0.8.6 + Full Sub-Repos)</span>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <div class="gallery-item">
+        <img src="catalog_assets/10_xonotic_map_2_afterslime.jpg" alt="Xonotic Afterslime Arena" onclick="openLightbox(this)" />
+        <div class="gallery-caption">maps/afterslime.jpg (Đấu trường Afterslime)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/10_xonotic_map_3_atelier.jpg" alt="Xonotic Atelier Arena" onclick="openLightbox(this)" />
+        <div class="gallery-caption">maps/atelier.jpg (Đấu trường Atelier)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/10_xonotic_map_4_boil.jpg" alt="Xonotic Boil Arena" onclick="openLightbox(this)" />
+        <div class="gallery-caption">maps/boil.jpg (Đấu trường Boil)</div>
+      </div>
+      <div class="gallery-item">
+        <img src="catalog_assets/10_xonotic_map_1__hudsetup.jpg" alt="Xonotic HUD & Weapon Feedback" onclick="openLightbox(this)" />
+        <div class="gallery-caption">maps/_hudsetup.jpg (Giao diện HUD & Vũ khí)</div>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="panel">
+        <h3>4 Trụ Cột Thiết Kế Game (Xonotic)</h3>
+        <ul class="design-list">
+          <li><strong>1. Vòng chơi chính (Core Loop):</strong> Di chuyển tốc độ cao trong đấu trường 3D nhiều tầng bằng kỹ thuật <em>Bunny-hopping</em> và <em>Laser/Blaster-jumping</em>, kiểm soát chu kỳ hồi Giáp/Máu lớn (Mega Health / Mega Armor) và thu thập 9 vũ khí chính, mỗi vũ khí có <strong>2 chế độ bắn (Primary + Secondary Fire)</strong> bổ trợ nhau để áp đảo đối phương.</li>
+          <li><strong>2. Quyết định người chơi phải đưa ra:</strong> Đổi vũ khí tức thời (Weapon Switching Combo) theo khoảng cách và địa hình (ví dụ: bắn hạt <em>Electro</em> phụ ra sàn rồi kích nổ chuỗi bằng tia chính; dùng lực đẩy <em>Force/Knockback</em> của <em>Devastator/Mortar/Crylink</em> hất văng địch xuống vực hoặc tự đẩy mình bay qua đấu trường).</li>
+          <li><strong>3. Cách các đấu trường khác nhau:</strong> Hơn 30 đấu trường chính thức (<em>Afterslime, Atelier, Boil, Catharsis, Dance, Darkzone, Solarium...</em>) khác biệt hoàn toàn về độ mở không gian, bệ phóng (Jump Pads), cổng dịch chuyển (Teleporters), bẫy môi trường (axit, dung nham, chân không vũ trụ) và chế độ chơi (Deathmatch, Capture The Flag, Clan Arena, Freeze Tag, Invasion).</li>
+          <li><strong>4. Cách thưởng khiến người chơi muốn tiếp tục:</strong> <strong>Phản hồi chiến đấu (Combat Juice / Game Feel)</strong> đỉnh cao: tiếng chuông báo trúng đích (Hit-sound đổi cao độ theo lượng sát thương), số sát thương bay lên, lực giật vật lý đẩy lùi mục tiêu rõ rệt, vệt đạn (Particle Trails) và vụ nổ đa tầng (<code>effectinfo.txt</code>) khiến mỗi phát bắn trúng đều cực kỳ "đã tay".</li>
+        </ul>
+        <div class="takeaway-box">
+          <strong>Bài học trực tiếp cho <code>eclipse-survivors</code>:</strong> Nghiên cứu <code>source/data/xonotic-data.pk3dir/bal-wep-xonotic.cfg</code> (cân bằng tốc độ đạn, bán kính nổ, lực đẩy lùi <code>force</code>) và <code>effectinfo.txt</code> (công thức ghép 4 lớp cho 1 vụ nổ: <em>Tia chớp sáng tức thời + Hạt tia lửa văng nhanh + Khói tản chậm + Sóng xung kích mở rộng</em> + âm thanh <em>Pitch-scaled Hit Sound</em>).
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kiểm Toán Giấy Phép & Nguồn (Xonotic)</h3>
+        <table class="license-table">
+          <tr><th>Code & Engine</th><td><strong>GNU GPL v3.0+</strong> cho toàn bộ QuakeC game logic (<code>COPYING</code>) và <strong>GNU GPL v2.0+</strong> cho DarkPlaces Engine.</td></tr>
+          <tr><th>Ảnh, Models, Particles & Maps</th><td><strong>GNU GPL v3.0+</strong> (hoặc tương thích GPLv2+/GPLv3+ theo chính sách đóng góp chính thức trong <code>COPYING</code> của Team Xonotic).</td></tr>
+          <tr><th>Âm thanh (SFX & Music)</th><td><strong>GNU GPL v3.0+ / GPL v2.0+</strong> (<code>xonotic-data.pk3dir/sound/</code> & <code>xonotic-music.pk3dir/</code>).</td></tr>
+          <tr><th>Font chữ</th><td><strong>GPL v2.0+ with Font Exception / SIL OFL 1.1</strong> — Font <em>Xolonium</em> (Severin Meyer) & <em>GNU Unifont</em> (<code>font-xolonium-20230620.pk3</code>).</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="Zoomed Asset" />
+  <div id="lightbox-caption"></div>
+</div>
+
+<script>
+  function filterGames(tag, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.game-card').forEach(card => {
+      if (tag === 'all' || card.dataset.tags.includes(tag)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+  function openLightbox(img) {
+    const lb = document.getElementById('lightbox');
+    document.getElementById('lightbox-img').src = img.src;
+    document.getElementById('lightbox-caption').textContent = img.nextElementSibling ? img.nextElementSibling.textContent : img.alt;
+    lb.classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+</script>
+</body>
+</html>

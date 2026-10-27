@@ -1,0 +1,54 @@
+{
+	"100": {
+		"avg_fps": 41.4,
+		"avg_frame_ms": 24.18,
+		"bones_solved_per_frame": 1200,
+		"cpu_rig_render_ms": 9.49,
+		"cpu_sim_ms": 0.48,
+		"draw_calls_2d": 3177,
+		"gpu_ms": 5.73,
+		"low_1pct_fps": 34.2,
+		"ram_mb": 51.3,
+		"rs_cpu_ms": 6.64,
+		"units": 100
+	},
+	"200": {
+		"avg_fps": 17.5,
+		"avg_frame_ms": 57.18,
+		"bones_solved_per_frame": 2400,
+		"cpu_rig_render_ms": 21.64,
+		"cpu_sim_ms": 2.21,
+		"draw_calls_2d": 6901,
+		"gpu_ms": 10.61,
+		"low_1pct_fps": 16.8,
+		"ram_mb": 52.5,
+		"rs_cpu_ms": 12.73,
+		"units": 200
+	},
+	"30": {
+		"avg_fps": 101.7,
+		"avg_frame_ms": 9.83,
+		"bones_solved_per_frame": 360,
+		"cpu_rig_render_ms": 4.25,
+		"cpu_sim_ms": 0.1,
+		"draw_calls_2d": 1579,
+		"gpu_ms": 2.44,
+		"low_1pct_fps": 95.2,
+		"ram_mb": 50.0,
+		"rs_cpu_ms": 3.12,
+		"units": 30
+	},
+	"300": {
+		"avg_fps": 11.5,
+		"avg_frame_ms": 87.19,
+		"bones_solved_per_frame": 3600,
+		"cpu_rig_render_ms": 32.66,
+		"cpu_sim_ms": 4.3,
+		"draw_calls_2d": 10309,
+		"gpu_ms": 17.08,
+		"low_1pct_fps": 11.0,
+		"ram_mb": 53.6,
+		"rs_cpu_ms": 19.25,
+		"units": 300
+	}
+}

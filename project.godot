@@ -1,0 +1,39 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Meowtopia: Thành Phố Mèo Nhàn Nhã (Idle Cat City)"
+config/description="Game Idle Nhàn Nhã: Cho mèo ăn, xây nhà cho mèo, chơi với mèo, mở rộng Thành Phố Mèo 4 cấp tự động"
+run/main_scene="res://scenes/cat_city_idle.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+ContentDB="*res://scripts/autoload/content_db.gd"
+SoundEngine="*res://scripts/autoload/sound_engine.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.06, 0.08, 0.13, 1)
